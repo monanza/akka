@@ -504,6 +504,7 @@ private[akka] class EmptyLocalActorRef(override val provider: ActorRefProvider,
       true
     case s: SelectChildName ⇒
       s.identifyRequest foreach { x ⇒ sender ! ActorIdentity(x.messageId, None) }
+      eventStream.publish(DeadLetter(s.wrappedMessage, if (sender eq Actor.noSender) provider.deadLetters else sender, this))
       true
     case _ ⇒ false
   }
@@ -539,6 +540,7 @@ private[akka] class DeadLetterActorRef(_provider: ActorRefProvider,
       true
     case s: SelectChildName ⇒
       s.identifyRequest foreach { x ⇒ sender ! ActorIdentity(x.messageId, None) }
+      eventStream.publish(DeadLetter(s.wrappedMessage, if (sender eq Actor.noSender) provider.deadLetters else sender, this))
       true
     case NullMessage ⇒ true
     case _           ⇒ false

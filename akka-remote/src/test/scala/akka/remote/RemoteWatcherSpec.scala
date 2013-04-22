@@ -56,6 +56,12 @@ class RemoteWatcherSpec extends AkkaSpec(
   val remoteSystem = ActorSystem("RemoteSystem", system.settings.config)
   val remoteAddress = remoteSystem.asInstanceOf[ExtendedActorSystem].provider.getDefaultAddress
 
+  muteDeadLetters(endPattern = "Disassociated.*")
+  muteDeadLetters(endPattern = "DisassociateUnderlying.*")
+
+  muteDeadLetters(remoteSystem, endPattern = "Disassociated.*")
+  muteDeadLetters(remoteSystem, endPattern = "DisassociateUnderlying.*")
+
   override def afterTermination() {
     remoteSystem.shutdown()
   }

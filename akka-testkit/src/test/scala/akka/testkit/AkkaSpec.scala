@@ -15,6 +15,7 @@ import com.typesafe.config.{ Config, ConfigFactory }
 import java.util.concurrent.TimeoutException
 import akka.dispatch.Dispatchers
 import akka.pattern.ask
+import akka.testkit.TestEvent._
 
 object AkkaSpec {
   val testConf: Config = ConfigFactory.parseString("""
@@ -92,5 +93,9 @@ abstract class AkkaSpec(_system: ActorSystem)
     Future(body)(system.dispatchers.lookup(dispatcherId))
 
   override def expectedTestDuration: FiniteDuration = 60 seconds
+
+  def muteDeadLetters(sys: ActorSystem = system, endPattern: String = ""): Unit =
+    if (!sys.log.isDebugEnabled)
+      sys.eventStream.publish(Mute(EventFilter.warning(pattern = ".*received dead.*" + endPattern)))
 
 }

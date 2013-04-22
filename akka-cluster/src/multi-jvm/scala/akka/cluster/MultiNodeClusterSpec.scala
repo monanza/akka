@@ -79,24 +79,23 @@ trait MultiNodeClusterSpec extends Suite with STMultiNodeSpec with WatchedByCoro
           sys.eventStream.publish(Mute(EventFilter.info(pattern = s)))
         }
 
-      Seq(".*received dead letter from.*ClientDisconnected",
-        ".*received dead letter from.*deadLetters.*PoisonPill",
-        ".*received dead letter from.*Disassociated",
-        ".*received dead letter from.*DisassociateUnderlying",
-        ".*received dead letter from.*HandleListenerRegistered",
-        ".*installing context org.jboss.netty.channel.DefaultChannelPipeline.*") foreach { s ⇒
-          sys.eventStream.publish(Mute(EventFilter.warning(pattern = s)))
-        }
+      muteDeadLetters(endPattern = "Heartbeat.*")
+      muteDeadLetters(endPattern = "GossipEnvelope.*")
+      muteDeadLetters(endPattern = "ClusterMetricsChanged.*")
+      muteDeadLetters(endPattern = "Disassociated.*")
+      muteDeadLetters(endPattern = "DisassociateUnderlying.*")
+      muteDeadLetters(endPattern = "HandleListenerRegistered.*")
+      muteDeadLetters(endPattern = "PoisonPill.*")
+      muteDeadLetters(endPattern = "DeathWatchNotification.*")
+      muteDeadLetters(endPattern = "NullMessage.*")
+      muteDeadLetters(endPattern = "InboundPayload.*")
+
     }
   }
 
   def muteMarkingAsUnreachable(sys: ActorSystem = system): Unit =
     if (!sys.log.isDebugEnabled)
       sys.eventStream.publish(Mute(EventFilter.error(pattern = ".*Marking.* as UNREACHABLE.*")))
-
-  def muteDeadLetters(sys: ActorSystem = system): Unit =
-    if (!sys.log.isDebugEnabled)
-      sys.eventStream.publish(Mute(EventFilter.warning(pattern = ".*received dead letter from.*")))
 
   override def afterAll(): Unit = {
     if (!log.isDebugEnabled) {
